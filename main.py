@@ -1,8 +1,7 @@
 # import MeCab
 # import pandas as pd
 import numpy as np
-# from sklearn import svm
-# from sklearn.grid_search import GridSearchCV
+from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer
 
 # 参考サイトのコピペ
@@ -52,12 +51,13 @@ def splited_data(train):
     return splited_data
 
 
-train = [
+train = np.array([
     ['あいうえお', 1],
     ['かきくけこ', 2],
     ['さしすえそ', 3],
     ['たちつてと', 4],
-]
+    ['ほげほげお', 4],
+])
 
 bodies = splited_data(train)
 count_vectorizer = CountVectorizer()
@@ -65,12 +65,21 @@ feature_vectors = count_vectorizer.fit_transform(bodies)  # csr_matrix(疎行列
 vocabulary = count_vectorizer.get_feature_names()
 
 print(feature_vectors)
-#
-# estimator = LogisticRegression(C=1e5)
-# estimator.fit(training_set.x, training_set.y)
-#
-#
-#         Xtrain = np.array(X)
-#         Xtrain = self.__replace_text2vec(Xtrain)
-#         probabilities = self.estimator.predict_proba(Xtrain)
-#         max_probability = np.max(probabilities)
+print(train[:,1])
+
+estimator = LogisticRegression(C=1e5)
+estimator.fit(feature_vectors, train[:,1])
+
+X = np.array([
+    ['あいうえお'],
+    ['テストテスト'],
+    ['さしすかきく'],
+])
+
+Xtrain = splited_data(X)
+count_vectorizer_pre = CountVectorizer(
+    vocabulary=vocabulary
+)
+feature_vectors = count_vectorizer_pre.fit_transform(Xtrain)
+result = estimator.predict(feature_vectors)
+print(result)
