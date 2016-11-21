@@ -18,14 +18,11 @@ def split(text):
         features = node.feature.split(",")
         pos = features[0]
         # if pos in ["名詞", "動詞", "形容詞", "感動詞", "助動詞", "副詞"]:
-        # if pos in ["名詞", "動詞", "形容詞", "感動詞", "副詞"]:
-        if pos in ["名詞", "感動詞"]:
+        if pos in ["名詞", "動詞", "形容詞", "感動詞", "副詞"]:
             if pos == '名詞' and features[1] == '非自立':
                 node = node.next
                 continue
             lemma = node.feature.split(",")[6]  #.decode("utf-8")
-            print(lemma)
-            print(pos)
             if lemma == 'ある':
                 node = node.next
                 continue
@@ -54,23 +51,23 @@ def splited_data(train):
 
 # [greeting, pc, buy, fail, question, password, key, forget]
 train = np.array([
-    [1, 0, 0, 0, 0, 0, 0, 0, 'こんにちは', 1],
-    [0, 1, 0, 1, 1, 0, 0, 0, 'パソコンが壊れました。どうすればいいですか？', 2],
-    [0, 1, 1, 0, 1, 0, 0, 0, 'パソコンを買いたいのですがどこで買おうかな？', 3],
-    [0, 0, 0, 0, 0, 1, 0, 1, 'パスワードを忘れてしまいました', 4],
-    [0, 0, 0, 0, 0, 0, 1, 1, 'カードキーを自宅においてきてしまいました', 5],
+    [1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 1, 0, 1, 1, 0, 0, 0, 2],
+    [0, 1, 1, 0, 1, 0, 0, 0, 3],
+    [0, 0, 0, 0, 0, 1, 0, 1, 4],
+    [0, 0, 0, 0, 0, 0, 1, 1, 5],
 ])
 
 
-bodies = splited_data(train)
-print(bodies)
-count_vectorizer = CountVectorizer()
-feature_vectors = count_vectorizer.fit_transform(bodies)  # csr_matrix(疎行列)が返る
-feature_arr = feature_vectors.toarray()
-vocabulary = count_vectorizer.get_feature_names()
+# bodies = splited_data(train)
+# print(bodies)
+# count_vectorizer = CountVectorizer()
+# feature_vectors = count_vectorizer.fit_transform(bodies)  # csr_matrix(疎行列)が返る
+# feature_arr = feature_vectors.toarray()
+# vocabulary = count_vectorizer.get_feature_names()
 
-feature_learn = np.c_[train[:,0:8], feature_arr]
-feature_learn = feature_learn.astype(float)
+# feature_learn = np.c_[train[:,0:5], feature_arr]
+# feature_learn = feature_learn.astype(float)
 label_learn = train[:,-1]
 
 # ロジスティック回帰
@@ -97,33 +94,30 @@ label_learn = train[:,-1]
 
 # ナイーブベイズ
 gnb = MultinomialNB()
-estimator = gnb.fit(feature_learn, label_learn)
-
-print(feature_learn)
+estimator = gnb.fit(train[:,:-1], label_learn)
 
 # [greeting, pc, buy, fail, question, password, key, forget]
 X = np.array([
-    [1, 0, 0, 0, 0, 0, 0, 0, 'こんにちは'],  # => 1
-    [0, 1, 0, 0, 0, 0, 0, 0, 'パソコン'],  # => fail
-    [0, 1, 1, 0, 0, 0, 0, 0, 'パソコンを買いたい。'],  # => 3
-    [0, 1, 1, 0, 1, 0, 0, 0, 'パソコンを買いたい。どうすればいい？'],  # => 3
-    [0, 0, 0, 0, 1, 0, 0, 0, 'ラーメンが食べたい。おすすめはどこですか？'],  # => fail
-    [0, 0, 1, 0, 0, 0, 0, 0, 'エルメスのバッグが買いたいです'],  # => fail
-    [1, 0, 0, 0, 0, 0, 0, 0, 'こんばんは'],  # => fail
+    [1, 0, 0, 0, 0, 0, 0, 0],  # => 1
+    [0, 1, 0, 0, 0, 0, 0, 0],  # => fail
+    [0, 1, 1, 0, 0, 0, 0, 0],  # => 3
+    [0, 1, 1, 0, 1, 0, 0, 0],  # => 3
+    [0, 0, 0, 0, 1, 0, 0, 0],  # => fail
+    [0, 0, 1, 0, 0, 0, 0, 0],  # => fail
+    [1, 0, 0, 0, 0, 0, 0, 0],  # => fail
 ])
 
-bodies = splited_data(X)
-print(bodies)
-count_vectorizer_pre = CountVectorizer(
-    vocabulary=vocabulary
-)
-feature_vectors = count_vectorizer_pre.fit_transform(bodies)
-feature_arr_predict = feature_vectors.toarray()
-feature = np.c_[X[:,0:8], feature_arr_predict]
-feature = feature.astype(float)
-print(feature)
-result = estimator.predict(feature)
+# bodies = splited_data(X)
+# count_vectorizer_pre = CountVectorizer(
+#     vocabulary=vocabulary
+# )
+# feature_vectors = count_vectorizer_pre.fit_transform(bodies)
+# feature_arr_predict = feature_vectors.toarray()
+# feature = np.c_[X[:,0:5], feature_arr_predict]
+# feature = feature.astype(float)
+# print(feature)
+result = estimator.predict(X)
 print(result)
 
-result_proba = estimator.predict_proba(feature)
+result_proba = estimator.predict_proba(X)
 print(result_proba)
